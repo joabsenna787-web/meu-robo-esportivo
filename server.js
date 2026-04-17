@@ -10,10 +10,10 @@ app.use(express.static(__dirname));
 
 // --- CONFIGURAÇÕES DO SISTEMA MULTI-CHAVES ---
 const MINHAS_CHAVES = [
-    process.env.API_KEY, 
-    "d1b404d28502c3e36310dfc09ae249b5", 
-    "436750b6150d5db8d6158516cb2acb40", 
-    "c8c6ed13166be5f8eb35a14ec614a008"
+    process.env.API_KEY, // Mantém a chave original da Render
+    "d1b404d28502c3e36310dfc09ae249b5", // Chave 2
+    "436750b6150d5db8d6158516cb2acb40", // Chave 3
+    "c8c6ed13166be5f8eb35a14ec614a008"  // Chave 4
 ];
 
 const TOKEN = process.env.TELEGRAM_TOKEN;
@@ -24,7 +24,9 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 let chaveAtualIndex = 0;
 let enviados = new Set();
 
-function getChaveAtiva() { return MINHAS_CHAVES[chaveAtualIndex]; }
+function getChaveAtiva() {
+    return MINHAS_CHAVES[chaveAtualIndex];
+}
 
 function rotacionarChave() {
     chaveAtualIndex = (chaveAtualIndex + 1) % MINHAS_CHAVES.length;
@@ -34,16 +36,20 @@ function rotacionarChave() {
 function calcularPressao(stats) {
     if (!stats) return 0;
     const get = n => parseInt(stats.find(s => s.type === n)?.value) || 0;
+    // Fórmula de Pressão Profissional (APPI)
     return (get("Shots on Goal") * 5) + (get("Dangerous Attacks") * 0.7) + (get("Corner Kicks") * 3);
 }
 
+// ROTA DO PAINEL (Mostra todos os jogos ao vivo)
 app.get("/ao-vivo", async (req, res) => {
     try {
         const resp = await axios.get(`${BASE_URL}/fixtures`, {
             headers: { "x-apisports-key": getChaveAtiva() },
             params: { live: "all" }
         });
-        if (resp.headers['x-ratelimit-requests-remaining'] === "0") rotacionarChave();
+        if (resp.headers['x-ratelimit-requests-remaining'] === "0") {
+            rotacionarChave();
+        }
         res.json(resp.data.response || []);
     } catch (e) {
         rotacionarChave();
@@ -51,8 +57,9 @@ app.get("/ao-vivo", async (req, res) => {
     }
 });
 
+// LÓGICA DO TELEGRAM (Filtro HT 15'-30')
 async function verificarJogos() {
-    console.log(`📡 Analisando HT (15'-30') com Chave ${chaveAtualIndex + 1}...`);
+    console.log(`📡 Scan HT Ativo | Chave ${chaveAtualIndex + 1}`);
     try {
         const resp = await axios.get(`${BASE_URL}/fixtures`, {
             headers: { "x-apisports-key": getChaveAtiva() },
@@ -76,20 +83,25 @@ async function verificarJogos() {
                 const pFora = calcularPressao(stats[1].statistics);
                 const tempo = j.fixture.status.elapsed;
 
-                // NOVA REGRA: Pressão > 45 E tempo entre 15 e 30 minutos
+                // CRITÉRIO DE ENTRADA: 15' a 30' minutos e Pressão acima de 45
                 if ((pCasa > 45 || pFora > 45) && tempo >= 15 && tempo <= 30) {
                     const timeForte = pCasa > pFora ? j.teams.home.name : j.teams.away.name;
-                    const msg = `🔥 **OPORTUNIDADE GOL HT!**\n\n🏟 ${j.teams.home.name} x ${j.teams.away.name}\n⚽ Placar: ${j.goals.home}-${j.goals.away}\n⏱ Tempo: ${tempo}' min\n⚡ Pressão: ${Math.max(pCasa, pFora).toFixed(0)} APPI\n\n🎯 *Foco: Gol antes do intervalo!*`;
+                    const msg = `🔥 **ALERTA: GOL HT IMINENTE!**\n\n🏟 ${j.teams.home.name} x ${j.teams.away.name}\n⚽ Placar: ${j.goals.home}-${j.goals.away}\n⏱ Tempo: ${tempo}' min\n⚡ Pressão: ${Math.max(pCasa, pFora).toFixed(0)} APPI\n\n🎯 *Estratégia: Over 0.5 HT*`;
                     
                     bot.sendMessage(CHAT_ID, msg, { parse_mode: 'Markdown' });
                     enviados.add(j.fixture.id);
                 }
             }
         }
-    } catch (e) { rotacionarChave(); }
+    } catch (e) {
+        rotacionarChave();
+    }
 }
 
+// Verifica a cada 2 minutos para economizar API mas manter precisão
 setInterval(verificarJogos, 120000);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Scanner HT Ativado!`));
+app.listen(PORT, () => {
+    console.log(`🚀 FUTEXCHANGE CORE ATIVO`);
+});
