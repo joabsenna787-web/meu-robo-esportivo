@@ -20,8 +20,15 @@ const TOKEN = process.env.TELEGRAM_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
 const BASE_URL = "https://v3.football.api-sports.io";
 
-// RESOLUÇÃO DO ERRO 409: Desativamos o polling se já houver conexão
-const bot = new TelegramBot(TOKEN, { polling: { autoStart: true, params: { timeout: 10 } } });
+// RESOLUÇÃO DO ERRO 409: Polling otimizado para evitar conflitos na Render
+const bot = new TelegramBot(TOKEN, { polling: { autoStart: true, interval: 3000 } });
+
+// Tratamento de erro para não travar o log
+bot.on("polling_error", (err) => {
+    if (err.code === 'ETELEGRAM' && err.message.includes('409')) {
+        console.log("⚠️ Conflito de Bot detectado. Aguardando reinicialização da instância...");
+    }
+});
 
 let chaveAtualIndex = 0;
 let enviados = new Set();
@@ -30,16 +37,15 @@ function getChaveAtiva() { return MINHAS_CHAVES[chaveAtualIndex]; }
 
 function rotacionarChave() {
     chaveAtualIndex = (chaveAtualIndex + 1) % MINHAS_CHAVES.length;
-    console.log(`⚠️ SISTEMA: Rotacionando para chave reserva ${chaveAtualIndex + 1}`);
 }
 
-// ROTA DO PAINEL (Forçando timezone e live=all)
+// ROTA DO PAINEL - Ajustada para máxima compatibilidade
 app.get("/ao-vivo", async (req, res) => {
     try {
-        const resp = await axios.get(`${BASE_URL}/fixtures?live=all&timezone=America/Sao_Paulo`, {
+        const resp = await axios.get(`${BASE_URL}/fixtures?live=all`, {
             headers: { 'x-apisports-key': getChaveAtiva() }
         });
-        console.log(`📡 Scan: ${resp.data.results} jogos encontrados.`);
+        console.log(`📡 Scanner: ${resp.data.results} partidas encontradas.`);
         res.json(resp.data.response || []);
     } catch (e) {
         rotacionarChave();
@@ -58,9 +64,9 @@ async function verificarJogos() {
 
         for (let j of jogos) {
             const tempo = j.fixture.status.elapsed;
+            // Estratégia Marcelo Ribeiro: HT 15'-30'
             if (tempo >= 15 && tempo <= 30 && !enviados.has(j.fixture.id)) {
-                // Enviar alerta simplificado para evitar flood
-                const msg = `🔥 **SINAL HT!**\n🏟 ${j.teams.home.name} x ${j.teams.away.name}\n⏱ Tempo: ${tempo}'\n🎯 *Estratégia: Over 0.5 HT*`;
+                const msg = `🔥 **OPORTUNIDADE HT!**\n🏟 ${j.teams.home.name} x ${j.teams.away.name}\n⏱ Tempo: ${tempo}' min\n🎯 *Sugestão: Over 0.5 HT*`;
                 bot.sendMessage(CHAT_ID, msg, { parse_mode: 'Markdown' }).catch(() => {});
                 enviados.add(j.fixture.id);
             }
@@ -68,6 +74,6 @@ async function verificarJogos() {
     } catch (e) { rotacionarChave(); }
 }
 
-setInterval(verificarJogos, 180000); // 3 minutos para não estourar a API
+setInterval(verificarJogos, 120000); 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 TERMINAL FUTEXCHANGE ATIVO NA PORTA ${PORT}`));
