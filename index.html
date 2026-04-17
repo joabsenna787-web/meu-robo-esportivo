@@ -2,158 +2,102 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FUTEXCHANGE | TERMINAL ELITE</title>
+    <title>FUTEXCHANGE PRO | MARKET INTELLIGENCE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&display=swap');
-        body { background: #020406; color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
-        .glass-panel { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(234, 179, 8, 0.1); backdrop-filter: blur(12px); }
-        .ht-alert { border-left: 4px solid #eab308; background: linear-gradient(90deg, rgba(234,179,8,0.1), transparent); }
-        .stat-badge { font-family: 'Orbitron', sans-serif; font-size: 10px; }
-        @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(234, 179, 8, 0); } 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); } }
-        .active-scan { animation: pulse-gold 2s infinite; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
+        body { background: #05070a; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .card-trader { background: linear-gradient(145deg, #0f172a, #020617); border: 1px solid rgba(255,255,255,0.05); }
+        .glow-yellow { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); }
+        .pulsar { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="p-4 md:p-8">
-
-    <div class="max-w-[1700px] mx-auto">
-        <div class="flex flex-col lg:flex-row justify-between items-center mb-8 gap-6">
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-10">
             <div>
-                <h1 class="text-3xl font-black text-white italic" style="font-family: 'Orbitron';">FUT<span class="text-yellow-500 underline">EXCHANGE</span> <span class="text-xs opacity-50">ULTRA-PRO</span></h1>
-                <div class="flex items-center gap-4 mt-2">
-                    <span class="text-[10px] bg-green-500/20 text-green-500 px-2 py-0.5 rounded border border-green-500/30">● DATA-STREAM LIVE</span>
-                    <span id="clock" class="text-[10px] text-slate-500 uppercase font-bold text-yellow-500"></span>
-                </div>
+                <h1 class="text-4xl font-black italic tracking-tighter text-yellow-500">FUTEXCHANGE <span class="text-white">PRO</span></h1>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Sincronizado com API-Sports Live Data</p>
             </div>
-
-            <div class="grid grid-cols-3 gap-6 glass-panel p-4 rounded-2xl border-white/5">
-                <div class="text-center">
-                    <p class="text-[9px] text-slate-500 uppercase">Eficiência HT</p>
-                    <p class="text-lg font-bold text-yellow-500">88.4%</p>
-                </div>
-                <div class="text-center border-x border-white/10 px-6">
-                    <p class="text-[9px] text-slate-500 uppercase">Volume 24h</p>
-                    <p class="text-lg font-bold">R$ 12.8k</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-[9px] text-slate-500 uppercase">Status</p>
-                    <p class="text-lg font-bold text-green-400">SYNC</p>
-                </div>
+            <div class="text-right">
+                <p class="text-[10px] text-slate-500 font-bold">CONTA CENT: <span class="text-green-500">ATIVA</span></p>
+                <p class="text-xl font-black">USD 6.30</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="space-y-6">
-                <div class="glass-panel p-6 rounded-2xl">
-                    <h3 class="text-xs font-bold text-yellow-500 mb-4 uppercase tracking-widest">Calculadora de Gestão</h3>
+                <div class="card-trader p-6 rounded-3xl border-yellow-500/20 glow-yellow">
+                    <h2 class="text-sm font-black uppercase mb-4 text-yellow-500 tracking-widest">Gestão de Risco</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[10px] text-slate-500 uppercase">Banca Total (R$)</label>
-                            <input type="number" value="2450" class="w-full bg-black/40 border border-white/10 rounded p-2 text-sm mt-1 focus:border-yellow-500 outline-none">
+                            <p class="text-[10px] text-slate-400">STAKE RECOMENDADA (2%)</p>
+                            <p class="text-2xl font-black">USD 0.12</p>
                         </div>
-                        <div class="flex justify-between text-[11px]">
-                            <span>Stake Sugerida (2%)</span>
-                            <span class="text-yellow-500 font-bold">R$ 49,00</span>
+                        <div class="p-4 bg-yellow-500/10 rounded-2xl border border-yellow-500/20">
+                            <p class="text-[10px] text-yellow-500 font-bold">INFO INSIDE</p>
+                            <p class="text-[11px] leading-relaxed mt-1 italic text-slate-300">"Priorize jogos com APPI > 50 entre 15' e 25' para máxima assertividade."</p>
                         </div>
-                        <button class="w-full bg-yellow-500 text-black font-black py-2 rounded text-xs uppercase hover:bg-yellow-400 transition-all">Calcular Entrada</button>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-3">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-                        <span class="w-2 h-2 bg-yellow-500 rounded-full animate-ping"></span>
-                        Scanner de Alta Pressão
-                    </h2>
+            <div class="lg:col-span-2 space-y-4">
+                <div class="flex justify-between items-center px-2">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Scanner Live Market</h3>
+                    <span class="pulsar text-[10px] bg-green-500/20 text-green-500 px-2 py-1 rounded-full font-bold">● LIVE NOW</span>
                 </div>
-
-                <div id="feed-jogos" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="col-span-full py-20 text-center glass-panel rounded-3xl opacity-30 italic">
-                        Buscando partidas em tempo real nos servidores da API-Football...
+                
+                <div id="lista-jogos" class="space-y-4">
                     </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString() + ' | SAO PAULO - BR';
-        }
-        setInterval(updateClock, 1000);
-
-        async function carregarJogos() {
-            try {
-                const res = await fetch('/ao-vivo');
-                const jogos = await res.json();
-                const container = document.getElementById('feed-jogos');
-
-                if (!jogos || jogos.length === 0) {
-                    container.innerHTML = '<div class="col-span-full p-20 text-center opacity-30 italic">Nenhum jogo ao vivo detectado agora. Verifique se há rodadas rolando.</div>';
-                    return;
-                }
-
-                container.innerHTML = jogos.map(j => {
-                    const tempo = j.fixture.status.elapsed;
-                    const isHT = tempo >= 15 && tempo <= 35;
-                    // Simulação de pressão avançada para o painel profissional
-                    const pressao = Math.floor(Math.random() * 60) + 20;
-
-                    return `
-                        <div class="glass-panel p-6 rounded-[2rem] transition-all hover:scale-[1.02] ${isHT ? 'ht-alert active-scan' : ''}">
-                            <div class="flex justify-between items-center mb-6">
-                                <span class="stat-badge bg-black/60 px-3 py-1 rounded-full border border-white/5 text-yellow-500">
-                                    ${tempo}' MIN
-                                </span>
-                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">${j.league.name}</span>
-                            </div>
-
-                            <div class="grid grid-cols-3 items-center mb-8">
-                                <div class="text-right">
-                                    <p class="text-sm font-black text-white uppercase truncate">${j.teams.home.name}</p>
-                                    <p class="text-[8px] text-slate-500 font-bold">HOME</p>
-                                </div>
-                                <div class="text-center">
-                                    <span class="text-2xl font-black bg-white/5 px-4 py-2 rounded-xl border border-white/10">
-                                        ${j.goals.home}-${j.goals.away}
-                                    </span>
-                                </div>
-                                <div class="text-left">
-                                    <p class="text-sm font-black text-white uppercase truncate">${j.teams.away.name}</p>
-                                    <p class="text-[8px] text-slate-500 font-bold">AWAY</p>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-end">
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Pressão do Jogo</p>
-                                    <p class="text-xs font-black ${pressao > 50 ? 'text-yellow-500' : 'text-slate-300'}">${pressao} APPI</p>
-                                </div>
-                                <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-500 shadow-[0_0_10px_#eab308] transition-all duration-1000" style="width: ${pressao}%"></div>
-                                </div>
-                            </div>
-
-                            ${isHT ? `
-                            <div class="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
-                                <span class="text-[9px] font-black text-yellow-500 uppercase animate-pulse">● Zona de Entrada HT</span>
-                                <button class="text-[9px] bg-white text-black font-bold px-3 py-1 rounded-lg uppercase">Analisar Odds</button>
-                            </div>
-                            ` : ''}
-                        </div>
-                    `;
-                }).join('');
-            } catch (e) {
-                console.log("Erro de conexão com o servidor local.");
+        async function fetchGames() {
+            const res = await fetch('/ao-vivo');
+            const data = await res.json();
+            const container = document.getElementById('lista-jogos');
+            
+            if(!data || data.length === 0) {
+                container.innerHTML = `<div class="card-trader p-12 rounded-3xl text-center opacity-40">Aguardando início de novos confrontos importantes...</div>`;
+                return;
             }
-        }
 
-        setInterval(carregarJogos, 30000);
-        carregarJogos();
+            container.innerHTML = data.map(j => {
+                const tempo = j.fixture.status.elapsed;
+                const pressao = Math.floor(Math.random() * 70) + 15; // Simulado para o painel
+                const isHT = tempo >= 15 && tempo <= 30;
+
+                return `
+                    <div class="card-trader p-6 rounded-3xl transition-all hover:border-yellow-500/50 ${isHT ? 'border-yellow-500/40 bg-yellow-500/5' : ''}">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] font-black bg-slate-800 px-3 py-1 rounded-full">${tempo}' MIN</span>
+                            <span class="text-[10px] text-slate-500 font-bold uppercase">${j.league.name}</span>
+                        </div>
+                        <div class="flex justify-between items-center px-4">
+                            <div class="w-1/3 text-center">
+                                <p class="text-sm font-black">${j.teams.home.name}</p>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-3xl font-black">${j.goals.home} - ${j.goals.away}</span>
+                                <span class="text-[9px] font-bold text-yellow-500 mt-1">${pressao} APPI</span>
+                            </div>
+                            <div class="w-1/3 text-center">
+                                <p class="text-sm font-black">${j.teams.away.name}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div class="h-full bg-yellow-500" style="width: ${pressao}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        setInterval(fetchGames, 30000);
+        fetchGames();
     </script>
 </body>
 </html>
