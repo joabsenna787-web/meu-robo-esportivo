@@ -8,14 +8,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// --- CONFIGURAÇÕES DO SISTEMA MULTI-CHAVES ---
+// --- CONFIGURAÇÕES DO SISTEMA MULTI-CHAVES (CONFIGURADAS) ---
 const MINHAS_CHAVES = [
-    process.env.API_KEY, // Mantém a chave original da Render
-    "d1b404d28502c3e36310dfc09ae249b5", // Chave 2
-    "436750b6150d5db8d6158516cb2acb40", // Chave 3
-    "c8c6ed13166be5f8eb35a14ec614a008"  // Chave 4
+    "436750b6150d5db8d6158516cb2acb40", // Sua chave principal
+    "d1b404d28502c3e36310dfc09ae249b5", // Reserva 1
+    "436750b6150d5db8d6158516cb2acb40", // Reserva 2
+    "c8c6ed13166be5f8eb35a14ec614a008"  // Reserva 3
 ];
 
+// Configurações vindas do ambiente da Render
 const TOKEN = process.env.TELEGRAM_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
 const BASE_URL = "https://v3.football.api-sports.io";
@@ -24,42 +25,43 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 let chaveAtualIndex = 0;
 let enviados = new Set();
 
-function getChaveAtiva() {
-    return MINHAS_CHAVES[chaveAtualIndex];
+function getChaveAtiva() { 
+    return MINHAS_CHAVES[chaveAtualIndex]; 
 }
 
 function rotacionarChave() {
     chaveAtualIndex = (chaveAtualIndex + 1) % MINHAS_CHAVES.length;
-    console.log(`⚠️ SISTEMA: Trocando para a chave reserva ${chaveAtualIndex + 1}`);
+    console.log(`⚠️ ROTATION: Chave reserva ${chaveAtualIndex + 1} ativada.`);
 }
 
 function calcularPressao(stats) {
     if (!stats) return 0;
     const get = n => parseInt(stats.find(s => s.type === n)?.value) || 0;
-    // Fórmula de Pressão Profissional (APPI)
+    // Fórmula APPI: (Chutes no gol * 5) + (Ataques Perigosos * 0.7) + (Escanteios * 3)
     return (get("Shots on Goal") * 5) + (get("Dangerous Attacks") * 0.7) + (get("Corner Kicks") * 3);
 }
 
-// ROTA DO PAINEL (Mostra todos os jogos ao vivo)
+// ROTA DO PAINEL (Mostra todos os jogos ao vivo no seu site)
 app.get("/ao-vivo", async (req, res) => {
     try {
         const resp = await axios.get(`${BASE_URL}/fixtures`, {
             headers: { "x-apisports-key": getChaveAtiva() },
             params: { live: "all" }
         });
-        if (resp.headers['x-ratelimit-requests-remaining'] === "0") {
-            rotacionarChave();
-        }
+        
+        // Se a chave atual atingir o limite, troca para a próxima
+        if (resp.headers['x-ratelimit-requests-remaining'] === "0") rotacionarChave();
+        
         res.json(resp.data.response || []);
     } catch (e) {
         rotacionarChave();
-        res.status(500).json({ erro: "API em rotação..." });
+        res.status(500).json({ erro: "Reconectando satélite..." });
     }
 });
 
-// LÓGICA DO TELEGRAM (Filtro HT 15'-30')
+// LÓGICA DE ALERTA NO TELEGRAM (15 a 30 minutos)
 async function verificarJogos() {
-    console.log(`📡 Scan HT Ativo | Chave ${chaveAtualIndex + 1}`);
+    console.log(`📡 Scanner Profissional HT | Chave ativa: ${chaveAtualIndex + 1}`);
     try {
         const resp = await axios.get(`${BASE_URL}/fixtures`, {
             headers: { "x-apisports-key": getChaveAtiva() },
@@ -67,7 +69,7 @@ async function verificarJogos() {
         });
 
         const jogos = resp.data.response;
-        if (!jogos) return;
+        if (!jogos || jogos.length === 0) return;
 
         for (let j of jogos) {
             if (enviados.has(j.fixture.id)) continue;
@@ -83,9 +85,9 @@ async function verificarJogos() {
                 const pFora = calcularPressao(stats[1].statistics);
                 const tempo = j.fixture.status.elapsed;
 
-                // CRITÉRIO DE ENTRADA: 15' a 30' minutos e Pressão acima de 45
+                // --- CRITÉRIO PARA OVER 0.5 HT ---
+                // Se pressão for alta e o jogo estiver entre 15' e 30'
                 if ((pCasa > 45 || pFora > 45) && tempo >= 15 && tempo <= 30) {
-                    const timeForte = pCasa > pFora ? j.teams.home.name : j.teams.away.name;
                     const msg = `🔥 **ALERTA: GOL HT IMINENTE!**\n\n🏟 ${j.teams.home.name} x ${j.teams.away.name}\n⚽ Placar: ${j.goals.home}-${j.goals.away}\n⏱ Tempo: ${tempo}' min\n⚡ Pressão: ${Math.max(pCasa, pFora).toFixed(0)} APPI\n\n🎯 *Estratégia: Over 0.5 HT*`;
                     
                     bot.sendMessage(CHAT_ID, msg, { parse_mode: 'Markdown' });
@@ -93,15 +95,13 @@ async function verificarJogos() {
                 }
             }
         }
-    } catch (e) {
-        rotacionarChave();
+    } catch (e) { 
+        rotacionarChave(); 
     }
 }
 
-// Verifica a cada 2 minutos para economizar API mas manter precisão
+// Verifica sinais a cada 2 minutos
 setInterval(verificarJogos, 120000);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 FUTEXCHANGE CORE ATIVO`);
-});
+app.listen(PORT, () => console.log(`🚀 TERMINAL FUTEXCHANGE OPERACIONAL`));
