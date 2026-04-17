@@ -2,128 +2,105 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>FUTEXCHANGE PRO V3 | LIVE INTELLIGENCE</title>
+    <title>FUTEXCHANGE ULTRA | TRADER TERMINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&family=Orbitron:wght@700&display=swap');
-        body { background: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-        .accent-border { border-left: 4px solid #eab308; }
-        .font-pro { font-family: 'Orbitron', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
+        body { background: #0a0c10; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; }
+        .panel-gold { border: 1px solid rgba(234, 179, 8, 0.1); background: rgba(15, 23, 42, 0.8); }
+        .btn-trade { background: #eab308; color: #000; font-weight: 800; transition: 0.3s; }
+        .btn-trade:hover { background: #facc15; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4); }
     </style>
 </head>
-<body class="p-4 lg:p-10">
-    <div class="max-w-[1400px] mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+<body class="p-4">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-white/5 pb-6">
             <div>
-                <h1 class="text-4xl font-black italic text-white font-pro">FUT<span class="text-yellow-500">EXCHANGE</span> <span class="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded ml-2">PRO V3</span></h1>
-                <p class="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-bold">Monitoramento Global em Tempo Real</p>
+                <h1 class="text-3xl font-black text-white italic">FUT<span class="text-yellow-500">EXCHANGE</span></h1>
+                <p class="text-[10px] text-yellow-500/50 font-bold tracking-[4px]">ALGORITHMIC TRADING SYSTEM</p>
             </div>
-            
-            <div class="flex gap-4">
-                <div class="glass p-4 rounded-2xl min-w-[180px] text-center border-green-500/20">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold">Saldo Conta Cent</p>
-                    <p class="text-xl font-black text-green-400">USD 6.30</p>
+            <div class="flex gap-6 mt-4 md:mt-0">
+                <div class="text-right">
+                    <p class="text-[9px] text-slate-500 uppercase">Banca Cent</p>
+                    <p class="text-xl font-bold text-white">USD 6.30</p>
                 </div>
-                <div class="glass p-4 rounded-2xl min-w-[180px] text-center border-yellow-500/20">
-                    <p class="text-[9px] text-slate-400 uppercase font-bold">Status do Radar</p>
-                    <p class="text-xl font-black text-yellow-500 animate-pulse">OPERACIONAL</p>
+                <div class="text-right border-l border-white/10 pl-6">
+                    <p class="text-[9px] text-slate-500 uppercase">Sinais Hoje</p>
+                    <p class="text-xl font-bold text-green-500">+12</p>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div class="space-y-6">
-                <div class="glass p-6 rounded-[2rem] accent-border">
-                    <h3 class="text-xs font-black text-yellow-500 mb-6 uppercase tracking-widest">Gestão de Banca</h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-end">
-                            <span class="text-[10px] text-slate-400">STAKE SUGERIDA (2%)</span>
-                            <span class="font-bold text-sm">USD 0.12</span>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="space-y-4">
+                <div class="panel-gold p-6 rounded-2xl">
+                    <h2 class="text-xs font-bold text-yellow-500 mb-4 uppercase">Calculadora Pro</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-500">Stake (2%)</span>
+                            <span class="text-white">USD 0.12</span>
                         </div>
-                        <div class="h-1 bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-green-500 w-[2%]"></div>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-500">Meta Diária</span>
+                            <span class="text-white">USD 0.50</span>
                         </div>
-                        <button class="w-full bg-white text-black font-black py-3 rounded-xl text-[10px] uppercase hover:bg-yellow-500 transition-all">Configurar Robô</button>
                     </div>
                 </div>
-
-                <div class="glass p-6 rounded-[2rem]">
-                    <h3 class="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest">Logs do Sistema</h3>
-                    <div class="text-[9px] space-y-2 font-mono text-slate-500">
-                        <p>> Sincronizando com API-Sports...</p>
-                        <p class="text-green-500">> Conexão estabelecida com sucesso.</p>
-                        <p>> Analisando 150+ ligas ativas.</p>
-                    </div>
-                </div>
+                <button class="btn-trade w-full py-4 rounded-2xl text-xs uppercase tracking-widest">Ajustar Filtros</button>
             </div>
 
-            <div class="lg:col-span-3">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xs font-black uppercase tracking-widest">Scanner de Pressão HT</h2>
-                    <span id="update-timer" class="text-[9px] text-slate-500 font-bold">ATUALIZANDO AGORA...</span>
+            <div class="lg:col-span-3 space-y-4">
+                <div class="flex justify-between items-center px-2">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        Scanner de Alta Pressão (HT)
+                    </h3>
                 </div>
                 
-                <div id="grid-jogos" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="radar-jogos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     </div>
             </div>
         </div>
     </div>
 
     <script>
-        async function updateRadar() {
+        async function loadRadar() {
             try {
                 const res = await fetch('/ao-vivo');
                 const data = await res.json();
-                const container = document.getElementById('grid-jogos');
+                const container = document.getElementById('radar-jogos');
                 
                 if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="col-span-full py-20 text-center glass rounded-[3rem] italic opacity-30 text-sm">Aguardando sinais de alta pressão no mercado...</div>`;
+                    container.innerHTML = `<div class="col-span-full py-16 text-center panel-gold rounded-3xl opacity-40 text-xs italic">Aguardando ligas compatíveis com o plano atual...</div>`;
                     return;
                 }
 
                 container.innerHTML = data.map(j => {
                     const tempo = j.fixture.status.elapsed;
-                    const p1 = Math.floor(Math.random() * 60) + 15;
-                    const p2 = Math.floor(Math.random() * 60) + 15;
-                    const maxP = Math.max(p1, p2);
+                    const isZone = tempo >= 15 && tempo <= 30;
+                    const pS = Math.floor(Math.random() * 50) + 20;
 
                     return `
-                        <div class="glass p-6 rounded-[2.5rem] transition-all hover:scale-[1.01] ${tempo >= 15 && tempo <= 30 ? 'border-yellow-500/30' : ''}">
-                            <div class="flex justify-between mb-6">
-                                <span class="text-[9px] font-black bg-white/5 px-3 py-1 rounded-full text-yellow-500">${tempo}' MIN</span>
-                                <span class="text-[9px] font-bold text-slate-500 uppercase truncate max-w-[150px]">${j.league.name}</span>
+                        <div class="panel-gold p-5 rounded-2xl transition-all ${isZone ? 'border-yellow-500/50 bg-yellow-500/5' : 'opacity-70'}">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-[9px] font-bold px-2 py-1 rounded bg-black text-yellow-500">${tempo}' MIN</span>
+                                <span class="text-[8px] text-slate-500 uppercase font-black">${j.league.name}</span>
                             </div>
-                            
-                            <div class="flex justify-between items-center px-4 mb-6">
-                                <div class="text-center w-1/3">
-                                    <p class="text-xs font-black uppercase truncate">${j.teams.home.name}</p>
-                                </div>
-                                <div class="text-2xl font-black px-4">${j.goals.home}-${j.goals.away}</div>
-                                <div class="text-center w-1/3">
-                                    <p class="text-xs font-black uppercase truncate">${j.teams.away.name}</p>
-                                </div>
+                            <div class="flex justify-between items-center font-bold text-sm mb-4">
+                                <span class="truncate w-1/3">${j.teams.home.name}</span>
+                                <span class="text-lg bg-white/5 px-3 py-1 rounded-lg">${j.goals.home}-${j.goals.away}</span>
+                                <span class="truncate w-1/3 text-right">${j.teams.away.name}</span>
                             </div>
-
-                            <div class="space-y-3">
-                                <div class="flex justify-between text-[9px] font-bold uppercase">
-                                    <span class="text-slate-500">Índice de Pressão</span>
-                                    <span class="${maxP > 50 ? 'text-yellow-500' : 'text-slate-400'}">${maxP} APPI</span>
-                                </div>
-                                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000" style="width: ${maxP}%"></div>
-                                </div>
+                            <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-yellow-500 shadow-[0_0_8px_#eab308]" style="width: ${pS}%"></div>
                             </div>
                         </div>
                     `;
                 }).join('');
-            } catch (e) {
-                console.error("Erro na atualização do radar.");
-            }
+            } catch (e) { console.log("Erro de atualização"); }
         }
-
-        setInterval(updateRadar, 30000);
-        updateRadar();
+        setInterval(loadRadar, 30000);
+        loadRadar();
     </script>
 </body>
 </html>
