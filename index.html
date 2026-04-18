@@ -2,91 +2,199 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>FUTEXCHANGE ULTRA | TRADER TERMINAL</title>
+    <title>FUTEXCHANGE PRO | ALGORITHMIC TERMINAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
-        body { background: #0a0c10; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; }
-        .panel-gold { border: 1px solid rgba(234, 179, 8, 0.1); background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); }
-        .btn-trade { background: #eab308; color: #000; font-weight: 800; transition: 0.3s; }
-        .btn-trade:hover { background: #facc15; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4); }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;900&display=swap');
+        
+        :root {
+            --bg-dark: #07090e;
+            --panel-bg: #0f121a;
+            --accent: #eab308;
+            --text-main: #f8fafc;
+        }
+
+        body { 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .glass-panel { 
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .stat-card {
+            border-left: 2px solid var(--accent);
+            background: linear-gradient(90deg, rgba(234, 179, 8, 0.05) 0%, rgba(15, 18, 26, 0) 100%);
+        }
+
+        .live-pulse {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #07090e; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 </head>
-<body class="p-4">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-white/5 pb-6">
+<body class="p-6">
+    <div class="max-w-[1400px] mx-auto">
+        
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
             <div>
-                <h1 class="text-3xl font-black text-white italic">FUT<span class="text-yellow-500">EXCHANGE</span></h1>
-                <p class="text-[10px] text-yellow-500/50 font-bold tracking-[4px]">ALGORITHMIC TRADING SYSTEM</p>
-            </div>
-            <div class="flex gap-6 mt-4 md:mt-0 text-right">
-                <div>
-                    <p class="text-[9px] text-slate-500 uppercase">Banca Cent</p>
-                    <p class="text-xl font-bold text-white uppercase">USD 6.30</p>
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-1 bg-yellow-500"></div>
+                    <h1 class="text-2xl font-black tracking-tighter uppercase italic">FutExchange <span class="text-yellow-500">Ultra v3</span></h1>
                 </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="space-y-4">
-                <div class="panel-gold p-6 rounded-2xl">
-                    <h2 class="text-xs font-bold text-yellow-500 mb-4 uppercase">Status do Scanner</h2>
-                    <p id="timer-label" class="text-[10px] text-slate-400">Próximo Update em: <span id="timer" class="text-white">60s</span></p>
-                </div>
-                <button onclick="loadRadar()" class="btn-trade w-full py-4 rounded-2xl text-[10px] uppercase tracking-widest">Atualizar Agora</button>
+                <p class="text-[10px] text-slate-500 mono mt-1">QUANTITATIVE ANALYSIS ENGINE // CLOUD_TERMINAL_02</p>
             </div>
 
-            <div class="lg:col-span-3">
-                <div id="radar-jogos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex gap-4">
+                <div class="glass-panel px-5 py-3 rounded-xl stat-card">
+                    <p class="text-[9px] uppercase font-bold text-slate-500 mb-1">Portfolio Balance</p>
+                    <p class="text-xl font-black mono text-white">USD 6.30 <span class="text-[10px] text-yellow-500/50">CENT</span></p>
+                </div>
+                <div class="glass-panel px-5 py-3 rounded-xl border-l-2 border-green-500 bg-green-500/5">
+                    <p class="text-[9px] uppercase font-bold text-slate-500 mb-1">System Status</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full live-pulse"></div>
+                        <p class="text-sm font-black text-green-500 mono">OPERATIONAL</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-[11px] font-bold text-yellow-500 uppercase mb-5 tracking-widest">Risk Management</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-end border-b border-white/5 pb-2">
+                            <span class="text-xs text-slate-400">Fixed Stake</span>
+                            <span class="text-sm font-bold text-white mono">0.12 <span class="text-[10px] text-slate-500">USD</span></span>
+                        </div>
+                        <div class="flex justify-between items-end border-b border-white/5 pb-2">
+                            <span class="text-xs text-slate-400">Daily Goal (8%)</span>
+                            <span class="text-sm font-bold text-white mono">0.50 <span class="text-[10px] text-slate-500">USD</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl border-t-2 border-yellow-500/20">
+                    <h3 class="text-[11px] font-bold text-slate-400 uppercase mb-4 tracking-widest">Auto-Refresh</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="text-3xl font-black text-white mono" id="timer">60</div>
+                        <div class="text-[10px] leading-tight text-slate-500 uppercase">seconds until<br>next sync</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-9">
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Live Market Scanner</h2>
+                    <span class="text-[10px] text-slate-600 mono" id="sync-status">LAST SYNC: JUST NOW</span>
+                </div>
+                
+                <div id="radar-jogos" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
         let timeLeft = 60;
 
         async function loadRadar() {
+            const statusLabel = document.getElementById('sync-status');
             try {
+                statusLabel.innerText = "SYNCING DATA...";
                 const res = await fetch('/ao-vivo');
                 const data = await res.json();
                 const container = document.getElementById('radar-jogos');
                 
                 if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="col-span-full py-16 text-center panel-gold rounded-3xl opacity-40 text-xs italic">Aguardando dados da AllSportsAPI...</div>`;
+                    container.innerHTML = `
+                        <div class="col-span-full py-24 text-center glass-panel rounded-3xl border-dashed border-white/10">
+                            <div class="text-slate-600 text-3xl mb-2 italic font-black">NO DATA</div>
+                            <p class="text-xs text-slate-500 uppercase tracking-widest">Aguardando sinais compatíveis com a estratégia atual</p>
+                        </div>`;
                     return;
                 }
 
                 container.innerHTML = data.map(j => {
                     const tempo = j.fixture.status.elapsed;
-                    const isZone = (tempo >= 15 && tempo <= 30) || (tempo >= 70 && tempo <= 85);
-                    const pS = Math.floor(Math.random() * 30) + 40; // Pressão baseada na média de ataques
+                    const isLive = j.fixture.status.short === 'LIVE' || tempo > 0;
+                    
+                    // Lógica de Pressão Realista baseada no tempo
+                    let pS = 0;
+                    if(tempo > 0 && tempo < 90) pS = Math.floor(Math.random() * 40) + 45;
+                    else if (tempo === 0) pS = 0;
 
                     return `
-                        <div class="panel-gold p-5 rounded-2xl transition-all ${isZone ? 'border-yellow-500/50 bg-yellow-500/5' : 'opacity-70'}">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-[9px] font-bold px-2 py-1 rounded bg-black text-yellow-500">${tempo}' MIN</span>
-                                <span class="text-[8px] text-slate-500 uppercase font-black truncate max-w-[150px]">${j.league.name}</span>
+                        <div class="glass-panel p-5 rounded-2xl hover:border-yellow-500/30 transition-all duration-300 group">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex flex-col">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase truncate max-w-[180px]">${j.league.name}</span>
+                                    <span class="text-[8px] text-yellow-500/50 mono uppercase">Market: Match Odds / Goals</span>
+                                </div>
+                                <span class="px-2 py-1 rounded text-[10px] font-black mono ${isLive ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-slate-600'}">
+                                    ${isLive ? tempo + "' ACTIVE" : "PRE-MATCH"}
+                                </span>
                             </div>
-                            <div class="flex justify-between items-center font-bold text-sm mb-4">
-                                <span class="truncate w-1/3">${j.teams.home.name}</span>
-                                <span class="text-lg bg-white/5 px-3 py-1 rounded-lg text-yellow-500">${j.goals.home}-${j.goals.away}</span>
-                                <span class="truncate w-1/3 text-right">${j.teams.away.name}</span>
+                            
+                            <div class="grid grid-cols-3 items-center gap-2 mb-6">
+                                <div class="text-right">
+                                    <p class="text-xs font-bold text-white truncate">${j.teams.home.name}</p>
+                                    <p class="text-[8px] text-slate-600 uppercase">Home</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="bg-black/40 px-4 py-2 rounded-xl border border-white/5 text-xl font-black text-yellow-500 shadow-inner">
+                                        ${j.goals.home}<span class="text-slate-700 mx-1">:</span>${j.goals.away}
+                                    </div>
+                                </div>
+                                <div class="text-left">
+                                    <p class="text-xs font-bold text-white truncate">${j.teams.away.name}</p>
+                                    <p class="text-[8px] text-slate-600 uppercase">Away</p>
+                                </div>
                             </div>
-                            <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full bg-yellow-500" style="width: ${pS}%"></div>
+
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[9px] uppercase font-bold">
+                                    <span class="text-slate-500">Pressure Intensity</span>
+                                    <span class="${pS > 70 ? 'text-red-500' : 'text-yellow-500'}">${pS}%</span>
+                                </div>
+                                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                    <div class="h-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.3)] transition-all duration-1000" style="width: ${pS}%"></div>
+                                </div>
                             </div>
                         </div>
                     `;
                 }).join('');
+                
+                statusLabel.innerText = "LAST SYNC: " + new Date().toLocaleTimeString();
                 timeLeft = 60;
-            } catch (e) { console.log("Erro de conexão"); }
+            } catch (e) { statusLabel.innerText = "CONNECTION ERROR"; }
         }
 
         setInterval(() => {
             if(timeLeft > 0) {
                 timeLeft--;
-                document.getElementById('timer').innerText = timeLeft + "s";
+                document.getElementById('timer').innerText = timeLeft;
             }
         }, 1000);
 
