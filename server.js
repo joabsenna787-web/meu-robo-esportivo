@@ -12,45 +12,51 @@ const BASE_URL = "https://apiv2.allsportsapi.com/football/";
 
 app.get("/ao-vivo", async (req, res) => {
     try {
-        // Adicionamos um timestamp para evitar cache do servidor da API
         const nocache = Date.now();
-        const url = `${BASE_URL}?met=Livescore&APIkey=${API_KEY}&_=${nocache}`;
+        // Usamos LET para permitir que a variável seja sobrescrita se o ao-vivo falhar
+        let partidasOriginal = [];
         
-        console.log("📡 Scanner: Solicitando atualização em tempo real...");
+        console.log("📡 Scanner: Solicitando atualização via AllSports...");
 
-        const resp = await axios.get(url, {
-            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
-            timeout: 15000
+        // 1. Tentativa via Livescore
+        const resp = await axios.get(`${BASE_URL}?met=Livescore&APIkey=${API_KEY}&_=${nocache}`, {
+            timeout: 12000
         });
 
-        const partidasOriginal = resp.data.result || [];
+        partidasOriginal = resp.data.result || [];
 
-        // Se o Livescore vier vazio ou travado, tentamos buscar via Fixtures do dia
+        // 2. Se o Livescore vier vazio (comum em algumas ligas Free), busca via Fixtures do dia
         if (partidasOriginal.length === 0) {
+            console.log("🔍 Livescore vazio, buscando agenda do dia...");
             const hoje = new Date().toISOString().split('T')[0];
-            const urlAlt = `${BASE_URL}?met=Fixtures&APIkey=${API_KEY}&from=${hoje}&to=${hoje}&_=${nocache}`;
-            const respAlt = await axios.get(urlAlt);
+            const respAlt = await axios.get(`${BASE_URL}?met=Fixtures&APIkey=${API_KEY}&from=${hoje}&to=${hoje}&_=${nocache}`);
             partidasOriginal = respAlt.data.result || [];
         }
 
         const partidasFormatadas = partidasOriginal.map(j => {
             let homeG = 0; let awayG = 0;
             const placarStr = j.event_final_result || j.event_ft_result || "0 - 0";
+            
             if (placarStr.includes('-')) {
                 const parts = placarStr.split('-');
                 homeG = parts[0].trim();
                 awayG = parts[1].trim();
             }
 
+            // Tratamento especial para o tempo: se estiver vazio ou "Finished", tratamos como 0 ou 90
+            let tempoAtual = parseInt(j.event_time);
+            if (isNaN(tempoAtual)) {
+                tempoAtual = (j.event_status === 'Finished') ? 90 : 0;
+            }
+
             return {
                 fixture: {
                     status: {
-                        // Se event_time for "Finished" ou vazio, marcamos como encerrado
-                        elapsed: parseInt(j.event_time) || 0,
+                        elapsed: tempoAtual,
                         short: j.event_status || 'LIVE'
                     }
                 },
-                league: { name: j.league_name },
+                league: { name: j.league_name || "Competição" },
                 teams: {
                     home: { name: j.event_home_team },
                     away: { name: j.event_away_team }
@@ -59,11 +65,11 @@ app.get("/ao-vivo", async (req, res) => {
             };
         });
 
-        // Ordenação: Jogos com tempo maior que 0 primeiro
+        // Ordenação: Jogos com tempo maior (Live) no topo
         partidasFormatadas.sort((a, b) => b.fixture.status.elapsed - a.fixture.status.elapsed);
 
-        res.set('Cache-Control', 'no-store'); // Garante que o navegador não cacheie o 0-0
-        console.log(`✅ Update: ${partidasFormatadas.length} jogos sincronizados.`);
+        res.set('Cache-Control', 'no-store');
+        console.log(`✅ Sincronizado: ${partidasFormatadas.length} partidas.`);
         res.json(partidasFormatadas);
 
     } catch (e) {
@@ -73,4 +79,4 @@ app.get("/ao-vivo", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 TERMINAL SYNC ACTIVE | PORTA ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 TERMINAL SYNC OPERACIONAL | PORTA ${PORT}`));
