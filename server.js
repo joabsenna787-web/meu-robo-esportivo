@@ -8,9 +8,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// --- CONFIGURAÇÃO DE CHAVES (Chave suspensa removida) ---
+// --- CONFIGURAÇÃO DE CHAVES ATUALIZADA (Chaves removidas conforme solicitado) ---
 const MINHAS_CHAVES = [
-    "436750b6150d5db8d6158516cb2acb40", 
     "d1b404d28502c3e36310dfc09ae249b5", 
     "c8c6ed13166be5f8eb35a14ec614a008"
 ];
@@ -32,7 +31,7 @@ app.get("/ao-vivo", async (req, res) => {
     const chave = getChaveAtiva();
     
     try {
-        // 1. Tenta buscar jogos AO VIVO primeiro
+        // 1. Tenta buscar jogos AO VIVO
         let resp = await axios.get(`${BASE_URL}/fixtures?live=all`, {
             headers: { 
                 'x-apisports-key': chave,
@@ -43,15 +42,14 @@ app.get("/ao-vivo", async (req, res) => {
 
         let partidas = resp.data.response || [];
 
-        // 2. Se não houver jogos ao vivo, busca a agenda do dia com ajuste de Fuso
+        // 2. Busca agenda do dia se não houver jogos ao vivo (Ajuste de Fuso Brasil)
         if (partidas.length === 0) {
             const agora = new Date();
-            // Ajuste manual para UTC-3 (Horário de Brasília)
-            const offset = -3; 
+            const offset = -3; // Horário de Brasília
             const dataBrasil = new Date(agora.getTime() + (offset * 3600 * 1000));
             const hojeFormatado = dataBrasil.toISOString().split('T')[0];
 
-            console.log(`🔍 Sem jogos ao vivo. Buscando agenda para: ${hojeFormatado}`);
+            console.log(`🔍 Scanner vazio. Buscando agenda para: ${hojeFormatado} (Chave: ${chaveAtualIndex})`);
             
             const respAgenda = await axios.get(`${BASE_URL}/fixtures?date=${hojeFormatado}`, {
                 headers: { 'x-apisports-key': chave }
@@ -59,27 +57,26 @@ app.get("/ao-vivo", async (req, res) => {
             partidas = respAgenda.data.response || [];
         }
 
-        console.log(`📡 Scanner: ${partidas.length} partidas processadas | Chave Index: [${chaveAtualIndex}]`);
+        console.log(`📡 Scanner: ${partidas.length} partidas encontradas.`);
         res.json(partidas);
 
     } catch (e) {
-        console.error("⚠️ Erro na requisição. Rotacionando chave...");
+        console.error(`⚠️ Falha na chave [${chaveAtualIndex}]. Rotacionando para a próxima...`);
         
-        // Em caso de erro 429 (Limite) ou 403 (Chave inválida), pula para a próxima
+        // Rotaciona para a próxima chave disponível
         chaveAtualIndex = (chaveAtualIndex + 1) % MINHAS_CHAVES.length;
         
-        // Retorna lista vazia para o frontend não quebrar
+        // Retorna status 200 com lista vazia para evitar erro no painel visual
         res.status(200).json([]); 
     }
 });
 
-// Inicialização
+// Inicialização do Servidor
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`---`);
     console.log(`🚀 TERMINAL FUTEXCHANGE OPERACIONAL`);
     console.log(`💰 BANCA: USD 6.30`);
-    console.log(`🔑 CHAVES ATIVAS: ${MINHAS_CHAVES.length}`);
-    console.log(`📅 DATA DO SISTEMA: ${new Date().toLocaleString('pt-BR')}`);
+    console.log(`🔑 CHAVES EM RODÍZIO: ${MINHAS_CHAVES.length}`);
     console.log(`---`);
 });
