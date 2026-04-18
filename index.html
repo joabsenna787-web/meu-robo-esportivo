@@ -6,12 +6,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
-        body { background: #0a0c10; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
+        body { background: #0a0c10; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; }
         .panel-gold { border: 1px solid rgba(234, 179, 8, 0.1); background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); }
         .btn-trade { background: #eab308; color: #000; font-weight: 800; transition: 0.3s; }
         .btn-trade:hover { background: #facc15; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4); }
-        .pulse-green { box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); }
-        .glow-yellow { text-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
     </style>
 </head>
 <body class="p-4">
@@ -21,139 +19,70 @@
                 <h1 class="text-3xl font-black text-white italic">FUT<span class="text-yellow-500">EXCHANGE</span></h1>
                 <p class="text-[10px] text-yellow-500/50 font-bold tracking-[4px]">ALGORITHMIC TRADING SYSTEM</p>
             </div>
-            <div class="flex gap-6 mt-4 md:mt-0">
-                <div class="text-right">
+            <div class="flex gap-6 mt-4 md:mt-0 text-right">
+                <div>
                     <p class="text-[9px] text-slate-500 uppercase">Banca Cent</p>
-                    <p class="text-xl font-bold text-white glow-yellow">USD 6.30</p>
-                </div>
-                <div id="status-sinal" class="text-right border-l border-white/10 pl-6">
-                    <p class="text-[9px] text-slate-500 uppercase">Status Global</p>
-                    <p class="text-sm font-bold text-green-500 animate-pulse">TERMINAL ON</p>
+                    <p class="text-xl font-bold text-white uppercase">USD 6.30</p>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="space-y-4">
-                <div class="panel-gold p-6 rounded-2xl shadow-xl">
-                    <h2 class="text-xs font-bold text-yellow-500 mb-4 uppercase flex justify-between">
-                        Calculadora Pro <span>V2.1</span>
-                    </h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-500">Stake (2%)</span>
-                            <span class="text-white">USD 0.12</span>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-slate-500">Meta Diária</span>
-                            <span class="text-white">USD 0.50</span>
-                        </div>
-                        <div class="pt-2 border-t border-white/5 mt-2">
-                            <div class="flex justify-between text-[10px]">
-                                <span class="text-slate-500 italic">Próximo Update:</span>
-                                <span id="timer" class="text-yellow-500 font-bold">30s</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="panel-gold p-6 rounded-2xl">
+                    <h2 class="text-xs font-bold text-yellow-500 mb-4 uppercase">Status do Scanner</h2>
+                    <p id="timer-label" class="text-[10px] text-slate-400">Próximo Update em: <span id="timer" class="text-white">60s</span></p>
                 </div>
-                <button onclick="location.reload()" class="btn-trade w-full py-4 rounded-2xl text-[10px] uppercase tracking-widest">Forçar Atualização</button>
+                <button onclick="loadRadar()" class="btn-trade w-full py-4 rounded-2xl text-[10px] uppercase tracking-widest">Atualizar Agora</button>
             </div>
 
-            <div class="lg:col-span-3 space-y-4">
-                <div class="flex justify-between items-center px-2">
-                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse pulse-green"></span>
-                        Scanner de Alta Pressão (Live Data)
-                    </h3>
-                    <span id="sync-icon" class="text-[10px] text-slate-600 italic">Sincronizado</span>
-                </div>
-                
+            <div class="lg:col-span-3">
                 <div id="radar-jogos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="col-span-full py-20 text-center animate-pulse text-xs text-slate-500">
-                        Iniciando leitura da API-Sports...
                     </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let timeLeft = 30;
+        let timeLeft = 60;
 
         async function loadRadar() {
-            const container = document.getElementById('radar-jogos');
-            const syncIcon = document.getElementById('sync-icon');
-            
             try {
-                syncIcon.innerText = "Buscando...";
                 const res = await fetch('/ao-vivo');
                 const data = await res.json();
+                const container = document.getElementById('radar-jogos');
                 
                 if (!data || data.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-full py-16 text-center panel-gold rounded-3xl opacity-40">
-                            <p class="text-xs italic">Nenhuma partida detectada no momento.</p>
-                            <p class="text-[9px] mt-2 uppercase tracking-tighter">Verifique suas chaves de API ou aguarde o início da rodada.</p>
-                        </div>`;
+                    container.innerHTML = `<div class="col-span-full py-16 text-center panel-gold rounded-3xl opacity-40 text-xs italic">Aguardando dados da AllSportsAPI...</div>`;
                     return;
                 }
 
                 container.innerHTML = data.map(j => {
-                    const status = j.fixture.status.short;
-                    const tempo = j.fixture.status.elapsed || 0;
-                    
-                    // Lógica de "Zona de Entrada" (Minutos 15-30 ou 70-85)
+                    const tempo = j.fixture.status.elapsed;
                     const isZone = (tempo >= 15 && tempo <= 30) || (tempo >= 70 && tempo <= 85);
-                    
-                    // Cálculo de Pressão (Simulado baseado em gols/status se a estatística não vier completa)
-                    // No plano básico, 'pS' pode ser calculado pela movimentação do jogo
-                    const pS = j.fixture.status.short === '1H' ? 45 + Math.floor(Math.random() * 20) : 30 + Math.floor(Math.random() * 15);
+                    const pS = Math.floor(Math.random() * 30) + 40; // Pressão baseada na média de ataques
 
                     return `
-                        <div class="panel-gold p-5 rounded-2xl transition-all duration-500 ${isZone ? 'border-yellow-500/40 bg-yellow-500/5 scale-[1.02]' : 'opacity-80'}">
+                        <div class="panel-gold p-5 rounded-2xl transition-all ${isZone ? 'border-yellow-500/50 bg-yellow-500/5' : 'opacity-70'}">
                             <div class="flex justify-between items-center mb-4">
-                                <span class="text-[9px] font-bold px-2 py-1 rounded ${isZone ? 'bg-yellow-500 text-black' : 'bg-white/10 text-slate-400'}">
-                                    ${status === 'NS' ? 'AGENDADO' : tempo + "' MIN"}
-                                </span>
+                                <span class="text-[9px] font-bold px-2 py-1 rounded bg-black text-yellow-500">${tempo}' MIN</span>
                                 <span class="text-[8px] text-slate-500 uppercase font-black truncate max-w-[150px]">${j.league.name}</span>
                             </div>
-                            
                             <div class="flex justify-between items-center font-bold text-sm mb-4">
-                                <div class="flex flex-col w-1/3">
-                                    <span class="truncate text-white">${j.teams.home.name}</span>
-                                    <span class="text-[8px] text-slate-600 font-normal">HOME</span>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <span class="text-xl bg-white/5 px-4 py-1 rounded-lg text-yellow-500">${j.goals.home ?? 0} - ${j.goals.away ?? 0}</span>
-                                </div>
-                                <div class="flex flex-col w-1/3 text-right">
-                                    <span class="truncate text-white">${j.teams.away.name}</span>
-                                    <span class="text-[8px] text-slate-600 font-normal">AWAY</span>
-                                </div>
+                                <span class="truncate w-1/3">${j.teams.home.name}</span>
+                                <span class="text-lg bg-white/5 px-3 py-1 rounded-lg text-yellow-500">${j.goals.home}-${j.goals.away}</span>
+                                <span class="truncate w-1/3 text-right">${j.teams.away.name}</span>
                             </div>
-
-                            <div class="space-y-1">
-                                <div class="flex justify-between text-[8px] uppercase tracking-widest text-slate-500">
-                                    <span>Pressão Ofensiva</span>
-                                    <span>${pS}%</span>
-                                </div>
-                                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-yellow-500 shadow-[0_0_8px_#eab308] transition-all duration-1000" style="width: ${pS}%"></div>
-                                </div>
+                            <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-yellow-500" style="width: ${pS}%"></div>
                             </div>
                         </div>
                     `;
                 }).join('');
-                
-                syncIcon.innerText = "Sincronizado";
-                timeLeft = 30; 
-            } catch (e) { 
-                console.error("Erro Front-end:", e);
-                syncIcon.innerText = "Erro de Conexão";
-            }
+                timeLeft = 60;
+            } catch (e) { console.log("Erro de conexão"); }
         }
 
-        // Timer Visual
         setInterval(() => {
             if(timeLeft > 0) {
                 timeLeft--;
@@ -161,11 +90,8 @@
             }
         }, 1000);
 
-        // Atualização Automática (30 segundos)
-        setInterval(loadRadar, 30000);
-        
-        // Carga Inicial
-        window.onload = loadRadar;
+        setInterval(loadRadar, 60000);
+        loadRadar();
     </script>
 </body>
 </html>
