@@ -2,97 +2,94 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>FUTEXCHANGE PRO | QUANTITATIVE ANALYZER</title>
+    <title>FUTEXCHANGE | DUAL STRATEGY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;900&display=swap');
-        body { background: #020408; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+        body { background: #05070a; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .card-pro { background: #0f172a; border: 1px solid rgba(59, 130, 246, 0.1); transition: 0.3s; }
+        .btn-active { background: #3b82f6; color: white; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .card-pro { 
-            background: linear-gradient(145deg, #0f172a 0%, #020617 100%);
-            border: 1px solid rgba(59, 130, 246, 0.1);
-        }
-        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.1); }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-10">
     <div class="max-w-6xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-12 border-b border-white/5 pb-8">
-            <div>
-                <h1 class="text-4xl font-black tracking-tighter italic text-blue-500 uppercase">FutExchange <span class="text-white underline">Pro</span></h1>
-                <p class="text-[10px] mono text-slate-500 mt-2 uppercase tracking-[4px]">Estratégia Quantitativa Over 2.5</p>
-            </div>
-            <div class="mt-6 md:mt-0 text-right bg-blue-500/5 p-4 rounded-2xl border border-blue-500/20">
-                <p class="text-[9px] text-blue-400 font-bold uppercase mono">Saldo Cent-Account</p>
-                <p class="text-2xl font-black text-white mono">USD 6.30</p>
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+            <h1 class="text-3xl font-black italic uppercase italic">FutExchange <span class="text-blue-500">Dual</span></h1>
+            
+            <div class="flex bg-slate-900 p-1 rounded-xl border border-white/5">
+                <button onclick="switchTab('over')" id="btn-over" class="px-6 py-2 rounded-lg text-[10px] font-black uppercase transition-all btn-active">Over 2.5 Gols</button>
+                <button onclick="switchTab('btts')" id="btn-btts" class="px-6 py-2 rounded-lg text-[10px] font-black uppercase transition-all text-slate-500">Ambas Marcam</button>
             </div>
         </header>
 
-        <div id="grid-main" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="col-span-full text-center py-20">
-                <p class="animate-pulse mono text-blue-500 uppercase text-xs">Sincronizando com o mercado de Odds...</p>
+        <div id="grid-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             </div>
-        </div>
     </div>
 
     <script>
-        async function updateScanner() {
+        let currentData = { over: [], btts: [] };
+        let activeMode = 'over';
+
+        async function fetchData() {
             try {
-                const res = await fetch('/ao-vivo');
-                const data = await res.json();
-                const container = document.getElementById('grid-main');
-
-                container.innerHTML = data.map(j => {
-                    let badgeColor = j.probabilidade > 80 ? 'bg-green-500' : 'bg-blue-500';
-                    let statusText = j.probabilidade > 80 ? 'HIGH PROBABILITY' : 'MARKET VALUE';
-                    
-                    return `
-                    <div class="card-pro p-6 rounded-[2rem] glow-green relative group">
-                        <div class="flex justify-between items-start mb-6">
-                            <span class="text-[9px] font-black px-3 py-1 rounded-full ${badgeColor}/10 ${badgeColor.replace('bg-', 'text-')} mono uppercase">
-                                ${statusText}
-                            </span>
-                            <span class="text-[10px] text-slate-500 mono font-bold">${j.hora}</span>
-                        </div>
-
-                        <div class="mb-8 space-y-4">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] text-blue-500/50 font-black uppercase mb-1">Casa</span>
-                                <span class="text-lg font-black text-white truncate uppercase italic tracking-tight">${j.casa}</span>
-                            </div>
-                            <div class="flex flex-col border-l-2 border-blue-500/20 pl-4">
-                                <span class="text-[10px] text-slate-600 font-black uppercase mb-1">Visitante</span>
-                                <span class="text-lg font-black text-slate-300 truncate uppercase italic tracking-tight">${j.fora}</span>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-end">
-                                <span class="text-[9px] font-black text-slate-500 uppercase">Score de Gols</span>
-                                <span class="text-xl font-black text-white mono">${j.probabilidade}%</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                                <div class="h-full ${badgeColor} transition-all duration-1000" style="width: ${j.probabilidade}%"></div>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 flex gap-2">
-                            <div class="flex-1 bg-white/5 p-3 rounded-2xl text-center border border-white/5">
-                                <p class="text-[8px] text-slate-500 uppercase font-bold mb-1">Odd Mercado</p>
-                                <p class="text-sm font-black text-blue-400 mono">@${j.odd}</p>
-                            </div>
-                            <a href="https://www.bet365.com" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-500 transition-colors rounded-2xl flex items-center justify-center text-[10px] font-black uppercase tracking-tighter">
-                                Analisar Bet
-                            </a>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-            } catch (e) { console.log(e); }
+                const res = await fetch('/analise-completa');
+                currentData = await res.json();
+                renderCards();
+            } catch (e) { console.error(e); }
         }
 
-        updateScanner();
-        setInterval(updateScanner, 600000);
+        function switchTab(mode) {
+            activeMode = mode;
+            document.getElementById('btn-over').classList.toggle('btn-active', mode === 'over');
+            document.getElementById('btn-over').classList.toggle('text-slate-500', mode !== 'over');
+            document.getElementById('btn-btts').classList.toggle('btn-active', mode === 'btts');
+            document.getElementById('btn-btts').classList.toggle('text-slate-500', mode !== 'btts');
+            renderCards();
+        }
+
+        function renderCards() {
+            const container = document.getElementById('grid-cards');
+            const list = currentData[activeMode];
+
+            if (!list || list.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 mono uppercase text-xs">Nenhuma entrada de valor detectada...</div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(j => `
+                <div class="card-pro p-6 rounded-3xl relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[9px] font-black text-slate-500 uppercase">${j.liga}</span>
+                        <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded-lg mono font-bold">${j.hora}</span>
+                    </div>
+
+                    <div class="space-y-2 mb-6">
+                        <p class="text-sm font-black truncate">${j.casa}</p>
+                        <p class="text-[10px] text-slate-700 italic font-black uppercase">v s</p>
+                        <p class="text-sm font-black truncate">${j.fora}</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-white/5">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-[9px] text-slate-500 font-bold uppercase">${activeMode === 'over' ? 'Prob. Over 2.5' : 'Prob. Ambas Marcam'}</span>
+                            <span class="text-sm font-black text-blue-500 mono">${j.probabilidade}%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500" style="width: ${j.probabilidade}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                        <span class="text-[10px] font-black text-blue-400 mono">ODD @${j.odd}</span>
+                        <a href="https://www.bet365.com" target="_blank" class="text-[10px] font-black uppercase text-white hover:text-blue-400">Analisar →</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        fetchData();
+        setInterval(fetchData, 600000);
     </script>
 </body>
 </html>
