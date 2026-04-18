@@ -1,66 +1,106 @@
-const express = require("express");
-const axios = require("axios");
-const cors = require("cors");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.static(__dirname));
-
-// --- CONFIGURAÇÃO CHAVE ---
-const API_KEY = "5d5cb83a4f064d642aff51dcd0fbd466f6f621880b42cfdf4fad77f7a63455d2";
-const BASE_URL = "https://apiv2.allsportsapi.com/football/";
-
-app.get("/ao-vivo", async (req, res) => {
-    try {
-        const hoje = new Date().toISOString().split('T')[0];
-        console.log(`📡 Scanner Pré-Jogo: Filtrando agenda de ${hoje}`);
-
-        // Busca a agenda completa do dia
-        const url = `${BASE_URL}?met=Fixtures&APIkey=${API_KEY}&from=${hoje}&to=${hoje}`;
-        const resp = await axios.get(url);
-        const partidasOriginal = resp.data.result || [];
-
-        const analiseEstrategica = partidasOriginal.map(j => {
-            // Algoritmo de Score de Gols (Ligas com alta média histórica)
-            const ligasOver = ["Bundesliga", "Eredivisie", "Youth", "U20", "U23", "Women", "Reserve", "Iceland", "Norway"];
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>FUTEXCHANGE | PRE-MATCH ANALYZER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;900&display=swap');
+        
+        body { background: #070a0f; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .panel-analise { background: #0f172a; border: 1px solid #1e293b; transition: all 0.3s ease; }
+        .panel-analise:hover { border-color: #3b82f6; transform: scale(1.01); }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #3b82f6 0%, #22c55e 100%);
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold text-blue-400 mono uppercase tracking-widest">System Operational</span>
+                </div>
+                <h1 class="text-4xl font-black tracking-tighter italic uppercase">FutExchange <span class="text-blue-500 underline">Pre-Match</span></h1>
+                <p class="text-xs text-slate-500 mono mt-1">ESTRATÉGIA: FILTRAGEM DE TENDÊNCIA OVER 2.5 GOLS</p>
+            </div>
             
-            // Base estatística de 55 a 75%
-            let scoreTendencia = Math.floor(Math.random() * 20) + 55;
+            <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Banca de Operação</p>
+                <p class="text-2xl font-black mono text-white">USD 6.30 <span class="text-blue-500 text-xs">CENT</span></p>
+            </div>
+        </header>
 
-            // Bônus por liga favorável ao mercado de gols
-            if (ligasOver.some(l => (j.league_name || "").includes(l))) {
-                scoreTendencia += 18;
+        <div id="lista-estudo" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            </div>
+    </div>
+
+    <script>
+        async function carregarAnalise() {
+            try {
+                const res = await fetch('/ao-vivo');
+                const data = await res.json();
+                const container = document.getElementById('lista-estudo');
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full py-20 text-center panel-analise rounded-3xl border-dashed">
+                            <p class="text-slate-500 mono uppercase text-xs tracking-widest">Nenhuma oportunidade confirmada pelo algoritmo para as ligas do seu plano hoje.</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(j => `
+                    <div class="panel-analise p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-black text-slate-500 uppercase truncate max-w-[150px]">${j.liga}</span>
+                                <span class="text-[9px] text-blue-400 mono font-bold uppercase">Match ID: ${j.id}</span>
+                            </div>
+                            <div class="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-lg text-[10px] font-black mono">
+                                ${j.hora}
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-center gap-3">
+                                <div class="w-1 h-4 bg-blue-500"></div>
+                                <span class="text-sm font-bold text-white truncate">${j.casa}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-1 h-4 bg-slate-700"></div>
+                                <span class="text-sm font-bold text-white truncate">${j.fora}</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-5 border-t border-white/5">
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Score de Tendência</span>
+                                <span class="text-sm font-black text-blue-500 mono">${j.probabilidade}%</span>
+                            </div>
+                            <div class="w-full h-2 bg-black/40 rounded-full overflow-hidden">
+                                <div class="h-full progress-bar transition-all duration-1000" style="width: ${j.probabilidade}%"></div>
+                            </div>
+                            <p class="text-[8px] text-slate-600 mt-3 italic uppercase text-center font-bold">
+                                Estudo recomendado para Over 1.5 HT / Over 2.5 FT
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Erro na carga.");
             }
+        }
 
-            return {
-                id: j.event_key,
-                hora: j.event_time,
-                liga: j.league_name || "International League",
-                casa: j.event_home_team,
-                fora: j.event_away_team,
-                probabilidade: scoreTendencia > 97 ? 97 : scoreTendencia
-            };
-        });
-
-        // Filtro de Qualidade: Apenas jogos com tendência acima de 65%
-        const listaFiltrada = analiseEstrategica
-            .filter(p => p.probabilidade >= 65)
-            .sort((a, b) => b.probabilidade - a.probabilidade);
-
-        console.log(`✅ Sincronizado: ${listaFiltrada.length} jogos prontos para estudo.`);
-        res.json(listaFiltrada);
-
-    } catch (e) {
-        console.error("❌ Falha na extração:", e.message);
-        res.status(200).json([]);
-    }
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-    console.log(`---`);
-    console.log(`🚀 TERMINAL PRE-MATCH ATIVO`);
-    console.log(`📊 ANALISANDO: ALLSPORTS V2`);
-    console.log(`---`);
-});
+        carregarAnalise();
+        // Atualiza a cada 10 minutos (mais que suficiente para pré-jogo)
+        setInterval(carregarAnalise, 600000);
+    </script>
+</body>
+</html>
