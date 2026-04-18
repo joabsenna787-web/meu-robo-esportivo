@@ -11,49 +11,71 @@ const API_KEY = "80a70f1d9e5e54c2d8e4bc3ecc04c41a";
 
 app.get("/analise-completa", async (req, res) => {
     try {
-        console.log("📡 Scanner: Executando filtragem Dual-Market (Over 2.5 + BTTS)...");
+        console.log("📡 Scanner: Executando filtragem Dual-Market...");
 
-        // Buscamos Totais (Over 2.5) e Ambas Marcam (BTTS)
-        const [respTotals, respBtts] = await Promise.all([
-            axios.get(`https://api.the-odds-api.com/v4/sports/soccer/odds/?apiKey=${API_KEY}&regions=eu&markets=totals&oddsFormat=decimal`),
-            axios.get(`https://api.the-odds-api.com/v4/sports/soccer/odds/?apiKey=${API_KEY}&regions=eu&markets=btts&oddsFormat=decimal`)
-        ]);
-
-        const formatarJogo = (evento, mercadoKey, alvo) => {
-            const bookmaker = evento.bookmakers[0];
-            let prob = 50;
-            let odd = "N/A";
-
-            if (bookmaker) {
-                const market = bookmaker.markets.find(m => m.key === mercadoKey);
-                if (market) {
-                    const outcome = market.outcomes.find(o => o.name === alvo || (mercadoKey === 'totals' && o.name === 'Over' && o.point === 2.5));
-                    if (outcome) {
-                        odd = outcome.price;
-                        prob = Math.round((1 / odd) * 114);
+        // Função auxiliar para buscar mercados com segurança
+        const buscarMercado = async (marketKey) => {
+            try {
+                const response = await axios.get(`https://api.the-odds-api.com/v4/sports/soccer/odds/`, {
+                    params: {
+                        apiKey: API_KEY,
+                        regions: 'eu',
+                        markets: marketKey,
+                        oddsFormat: 'decimal'
                     }
-                }
+                });
+                return response.data;
+            } catch (err) {
+                console.error(`⚠️ Erro ao buscar ${marketKey}:`, err.message);
+                return [];
             }
-            return {
-                id: evento.id,
-                hora: new Date(evento.commence_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                liga: evento.sport_title,
-                casa: evento.home_team,
-                fora: evento.away_team,
-                odd: odd,
-                probabilidade: prob > 98 ? 98 : prob
-            };
         };
 
-        const listaOver = respTotals.data.map(e => formatarJogo(e, 'totals', 'Over')).filter(j => j.probabilidade >= 65);
-        const listaBtts = respBtts.data.map(e => formatarJogo(e, 'btts', 'Yes')).filter(j => j.probabilidade >= 65);
+        // Buscamos os dados separadamente para evitar erro 422 em lote
+        const dataTotals = await buscarMercado('totals');
+        const dataBtts = await buscarMercado('btts');
 
-        res.json({ over: listaOver, btts: listaBtts });
+        const formatar = (lista, mercadoKey, alvo) => {
+            return lista.map(evento => {
+                const bookmaker = evento.bookmakers[0];
+                let prob = 0;
+                let odd = "N/A";
+
+                if (bookmaker) {
+                    const market = bookmaker.markets.find(m => m.key === mercadoKey);
+                    if (market) {
+                        const outcome = market.outcomes.find(o => 
+                            (mercadoKey === 'totals' && o.name === 'Over' && o.point === 2.5) ||
+                            (mercadoKey === 'btts' && o.name === 'Yes')
+                        );
+                        if (outcome) {
+                            odd = outcome.price;
+                            prob = Math.round((1 / odd) * 114);
+                        }
+                    }
+                }
+                return {
+                    id: evento.id,
+                    hora: new Date(evento.commence_time).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    liga: evento.sport_title,
+                    casa: evento.home_team,
+                    fora: evento.away_team,
+                    odd: odd,
+                    probabilidade: prob > 98 ? 98 : prob
+                };
+            }).filter(j => j.probabilidade >= 60); // Filtro de 60% para popular o painel
+        };
+
+        res.json({
+            over: formatar(dataTotals, 'totals'),
+            btts: formatar(dataBtts, 'btts')
+        });
+
     } catch (e) {
-        console.error("Erro na API:", e.message);
+        console.error("❌ Erro Crítico:", e.message);
         res.status(200).json({ over: [], btts: [] });
     }
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 TERMINAL DUAL-STRAT ATIVO`));
+app.listen(PORT, () => console.log(`🚀 TERMINAL DUAL-STRAT CORRIGIDO`));
